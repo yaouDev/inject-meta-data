@@ -33,7 +33,17 @@ if [ -z "$AFFECTED_FILES" ]; then
   exit 0
 fi
 
-echo "$AFFECTED_FILES" | tr '\n' '\0' > affected_files.txt
+AFFECTED_FILES=$(echo "$EVENT_PAYLOAD" | jq -r '
+  [
+    (.head_commit.added // []),
+    (.head_commit.modified // []),
+    (.head_commit.removed // [])
+  ]
+  | add
+  | unique
+  | .[]
+')
+
 
 METADATA_STRING="Commit: $SHA, Author: $AUTHOR, Date: $DATE, Message: $MESSAGE"
 
@@ -65,7 +75,7 @@ while IFS= read -r -d '' FILE; do
   else
     echo "Skipping non-matching file: $FILE"
   fi
-done < affected_files.txt
+done
 
 echo ""
 echo "Metadata injection completed successfully."
