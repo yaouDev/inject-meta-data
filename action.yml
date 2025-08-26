@@ -10,6 +10,10 @@ inputs:
     description: 'The identifier which signifies that metadata should be injected'
     required: false
     default: '__GIT_COMMIT_METADATA__'
+  debug_mode:
+    description: 'Generates addition debug output.'
+    required: false
+    default: ''
 
 runs:
   using: 'docker'
@@ -17,3 +21,5 @@ runs:
   env:
     SOURCE_PATH: ${{ inputs.source_code_path }}
     PLACEHOLDER: ${{ inputs.placeholder_identifier }}
+    DEBUG: ${{ inputs.debug_mode }}
+    

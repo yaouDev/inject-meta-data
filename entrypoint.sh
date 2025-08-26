@@ -4,6 +4,10 @@
 
 set -euo pipefail
 
+if [ -n "$DEBUG" ]; then
+    set -x
+fi
+
 : "${SOURCE_PATH:?Environment variable SOURCE_PATH is not set}"
 : "${PLACEHOLDER:?Environment variable PLACEHOLDER is not set}"
 
@@ -25,6 +29,12 @@ echo "Date:           $DATE"
 echo "Message:        $MESSAGE"
 echo "Source Path:    $SOURCE_PATH"
 echo "-----------------------------------"
+
+if [ -n "$DEBUG" ]; then
+    echo "head_commit payload:"
+    echo "$EVENT_PAYLOAD" | jq '.head_commit'
+fi
+
 
 AFFECTED_FILES=$(echo "$EVENT_PAYLOAD" | jq -r '[.head_commit.added?, .head_commit.modified?, .head_commit.removed?] | add | unique | .[]?')
 
