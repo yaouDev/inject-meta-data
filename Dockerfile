@@ -1,9 +1,10 @@
 FROM alpine:3.18
 
-WORKDIR /app
+RUN apk add --no-cache jq
+
+WORKDIR /github/workspace
 
 COPY entrypoint.sh .
-
 RUN chmod +x entrypoint.sh
 
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT
