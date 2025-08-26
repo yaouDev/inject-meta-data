@@ -1,4 +1,4 @@
-FROM alpine/git:2.44.0
+FROM alpine:3.18
 
 WORKDIR /app
 
