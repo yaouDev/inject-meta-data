@@ -18,8 +18,8 @@ jobs:
         id: inject
         uses: yaouDev/inject-metadata@wip
         with:
-          source_code_path: 'src'
-          debug: 'yes'
+          source_code_path: './src'
+          debug_mode: 'yes'
 
       - name: Commit and push changes
         uses: stefanzweifel/git-auto-commit-action@v5
