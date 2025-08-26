@@ -24,7 +24,7 @@ echo "Message: $MESSAGE"
 echo "Source Path: $SOURCE_PATH"
 echo "-----------------------------------"
 
-AFFECTED_FILES=$(echo "$EVENT_PAYLOAD" | jq -r '[.head_commit.added[], .head_commit.modified[], .head_commit.removed[]] | unique | .[]')
+AFFECTED_FILES=$(echo "$EVENT_PAYLOAD" | jq -r '[.head_commit.added // [], .head_commit.modified // [], .head_commit.removed // []] | unique | .[]')
 
 if [ -z "$AFFECTED_FILES" ]; then
   echo "No affected files found in the commit. Exiting."
