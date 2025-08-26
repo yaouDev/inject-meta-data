@@ -1,0 +1,21 @@
+name: Use Metadata Injection Action
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - wip
+
+jobs:
+  inject-metadata:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Inject metadata using the custom action
+        id: inject
+        uses: yaouDev/inject-metadata@wip
+        with:
+          source_code_path: 'src'
