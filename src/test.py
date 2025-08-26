@@ -1,5 +1,4 @@
 # __GIT_COMMIT_METADATA__
-#
 
 
 import os

@@ -31,11 +31,11 @@ if [ -z "$AFFECTED_FILES" ]; then
   exit 0
 fi
 
-for FILE in $AFFECTED_FILES; do
+echo "$AFFECTED_FILES" > affected_files.txt
+
+while read -r FILE; do
   if [[ "$FILE" =~ ^"$SOURCE_PATH" ]] && [[ "$FILE" =~ \.(js|jsx|ts|tsx|py|html|css|md|txt)$ ]]; then
     METADATA_STRING="Commit: $SHA, Author: $AUTHOR, Date: $DATE, Message: $MESSAGE"
-
-    echo "Injecting metadata..."
 
     if grep -q "^Commit: " "$FILE"; then
       echo "Updating metadata in $FILE..."
@@ -45,4 +45,4 @@ for FILE in $AFFECTED_FILES; do
       sed -i "s@$PLACEHOLDER@$METADATA_STRING@g" "$FILE"
     fi
   fi
-done
+done < affected_files.txt
