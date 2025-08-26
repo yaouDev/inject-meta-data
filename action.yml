@@ -1,0 +1,19 @@
+name: 'Inject Git Metadata'
+description: 'A GitHub Action to inject Git commit metadata into source code files.'
+
+inputs:
+  source_code_path:
+    description: 'The path to the source code folder to search within.'
+    required: false
+    default: '.'
+  placeholder_identifier:
+    description: 'The identifier which signifies that metadata should be injected'
+    required: false
+    default: '__GIT_COMMIT_METADATA__'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  env:
+    SOURCE_PATH: ${{ inputs.source_code_path }}
+    PLACEHOLDER: ${{ inputs.placeholder_identifier }}

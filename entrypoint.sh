@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# envs: SOURCE_PATH, PLACEHOLDER
+
+set -e
+
+SHA=$GITHUB_SHA
+
+EVENT_PAYLOAD=$(cat "$GITHUB_EVENT_PATH")
+
+AUTHOR=$(echo "$EVENT_PAYLOAD" | jq -r '.head_commit.author.name')
+DATE=$(echo "$EVENT_PAYLOAD" | jq -r '.head_commit.timestamp')
+MESSAGE=$(echo "$EVENT_PAYLOAD" | jq -r '.head_commit.message')
+
+echo "Running metadata injection script..."
+echo "-----------------------------------"
+echo "Commit SHA: $SHA"
+echo "Author: $AUTHOR"
+echo "Date: $DATE"
+echo "Message: $MESSAGE"
+echo "Source Path: $SOURCE_PATH"
+echo "-----------------------------------"
+
+AFFECTED_FILES=$(git diff-tree --no-commit-id --name-only -r "$SHA")
+
+for FILE in $AFFECTED_FILES; do
+  if [[ "$FILE" =~ ^"$SOURCE_PATH" ]] && [[ "$FILE" =~ \.(js|jsx|ts|tsx|py|html|css|md|txt)$ ]]; then
+    METADATA_STRING="Commit: $SHA, Author: $AUTHOR, Date: $DATE, Message: $MESSAGE"
+
+    if grep -q "^Commit: " "$FILE"; then
+      echo "Updating metadata in $FILE..."
+      sed -i "s@^Commit: .*@$METADATA_STRING@g" "$FILE"
+    elif grep -q "$PLACEHOLDER" "$FILE"; then
+      echo "Injecting new metadata into $FILE..."
+      sed -i "s@$PLACEHOLDER@$METADATA_STRING@g" "$FILE"
+    fi
+  fi
+done
