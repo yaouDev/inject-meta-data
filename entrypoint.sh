@@ -35,29 +35,29 @@ if [ -n "$DEBUG" ]; then
     echo "$EVENT_PAYLOAD" | jq '.head_commit'
 fi
 
-
-AFFECTED_FILES=$(echo "$EVENT_PAYLOAD" | jq -r '[.head_commit.added?, .head_commit.modified?, .head_commit.removed?] | add | unique | .[]?')
+AFFECTED_FILES=$(echo "$EVENT_PAYLOAD" | jq -r '
+  if .head_commit != null then
+    [
+      (.head_commit.added // []),
+      (.head_commit.modified // []),
+      (.head_commit.removed // [])
+    ]
+    | add
+    | unique
+    | .[]
+  else
+    empty
+  end
+')
 
 if [ -z "$AFFECTED_FILES" ]; then
   echo "No affected files found in the commit. Exiting."
   exit 0
 fi
 
-AFFECTED_FILES=$(echo "$EVENT_PAYLOAD" | jq -r '
-  [
-    (.head_commit.added // []),
-    (.head_commit.modified // []),
-    (.head_commit.removed // [])
-  ]
-  | add
-  | unique
-  | .[]
-')
-
-
 METADATA_STRING="Commit: $SHA, Author: $AUTHOR, Date: $DATE, Message: $MESSAGE"
 
-while IFS= read -r -d '' FILE; do
+echo "$AFFECTED_FILES" | while IFS= read -r FILE; do
   if [[ "$FILE" == "$SOURCE_PATH"* ]] && [[ "$FILE" =~ \.(js|jsx|ts|tsx|py|html|css|md|txt)$ ]]; then
     if [ -f "$FILE" ]; then
       echo "Processing file: $FILE"
@@ -89,3 +89,4 @@ done
 
 echo ""
 echo "Metadata injection completed successfully."
+
