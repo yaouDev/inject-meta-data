@@ -4,6 +4,9 @@
 
 set -e
 
+# trust the action
+git config --global --add safe.directory /github/workspace
+
 SHA=$GITHUB_SHA
 
 EVENT_PAYLOAD=$(cat "$GITHUB_EVENT_PATH")
