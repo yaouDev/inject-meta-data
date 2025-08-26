@@ -1,48 +1,71 @@
 #!/bin/bash
 
-# envs: SOURCE_PATH, PLACEHOLDER
+# Required envs: SOURCE_PATH, PLACEHOLDER
 
-set -e
+set -euo pipefail
 
-# trust the action
+: "${SOURCE_PATH:?Environment variable SOURCE_PATH is not set}"
+: "${PLACEHOLDER:?Environment variable PLACEHOLDER is not set}"
+
 git config --global --add safe.directory /github/workspace
 
-SHA=$GITHUB_SHA
-
+SHA=${GITHUB_SHA:-"unknown"}
 EVENT_PAYLOAD=$(cat "$GITHUB_EVENT_PATH")
 
-AUTHOR=$(echo "$EVENT_PAYLOAD" | jq -r '.head_commit.author.name')
-DATE=$(echo "$EVENT_PAYLOAD" | jq -r '.head_commit.timestamp')
-MESSAGE=$(echo "$EVENT_PAYLOAD" | jq -r '.head_commit.message')
+AUTHOR=$(echo "$EVENT_PAYLOAD" | jq -r '.head_commit.author.name // "unknown"')
+DATE=$(echo "$EVENT_PAYLOAD" | jq -r '.head_commit.timestamp // "unknown"')
+MESSAGE=$(echo "$EVENT_PAYLOAD" | jq -r '.head_commit.message // "unknown"')
 
+echo ""
 echo "Running metadata injection script..."
 echo "-----------------------------------"
-echo "Commit SHA: $SHA"
-echo "Author: $AUTHOR"
-echo "Date: $DATE"
-echo "Message: $MESSAGE"
-echo "Source Path: $SOURCE_PATH"
+echo "Commit SHA:     $SHA"
+echo "Author:         $AUTHOR"
+echo "Date:           $DATE"
+echo "Message:        $MESSAGE"
+echo "Source Path:    $SOURCE_PATH"
 echo "-----------------------------------"
 
-AFFECTED_FILES=$(echo "$EVENT_PAYLOAD" | jq -r '[.head_commit.added // [], .head_commit.modified // [], .head_commit.removed // []] | unique | .[]')
+AFFECTED_FILES=$(echo "$EVENT_PAYLOAD" | jq -r '[.head_commit.added?, .head_commit.modified?, .head_commit.removed?] | add | unique | .[]?')
 
 if [ -z "$AFFECTED_FILES" ]; then
   echo "No affected files found in the commit. Exiting."
   exit 0
 fi
 
-echo "$AFFECTED_FILES" > affected_files.txt
+echo "$AFFECTED_FILES" | tr '\n' '\0' > affected_files.txt
 
-while read -r FILE; do
-  if [[ "$FILE" =~ ^"$SOURCE_PATH" ]] && [[ "$FILE" =~ \.(js|jsx|ts|tsx|py|html|css|md|txt)$ ]]; then
-    METADATA_STRING="Commit: $SHA, Author: $AUTHOR, Date: $DATE, Message: $MESSAGE"
+METADATA_STRING="Commit: $SHA, Author: $AUTHOR, Date: $DATE, Message: $MESSAGE"
 
-    if grep -q "^Commit: " "$FILE"; then
-      echo "Updating metadata in $FILE..."
-      sed -i "s@^Commit: .*@$METADATA_STRING@g" "$FILE"
-    elif grep -q "$PLACEHOLDER" "$FILE"; then
-      echo "Injecting new metadata into $FILE..."
-      sed -i "s@$PLACEHOLDER@$METADATA_STRING@g" "$FILE"
+while IFS= read -r -d '' FILE; do
+  if [[ "$FILE" == "$SOURCE_PATH"* ]] && [[ "$FILE" =~ \.(js|jsx|ts|tsx|py|html|css|md|txt)$ ]]; then
+    if [ -f "$FILE" ]; then
+      echo "Processing file: $FILE"
+
+      if grep -q "^Commit: " "$FILE"; then
+        echo "Updating existing metadata..."
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+          sed -i '' "s@^Commit: .*@$METADATA_STRING@" "$FILE"
+        else
+          sed -i "s@^Commit: .*@$METADATA_STRING@" "$FILE"
+        fi
+      elif grep -q "$PLACEHOLDER" "$FILE"; then
+        echo "Injecting metadata into placeholder..."
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+          sed -i '' "s@$PLACEHOLDER@$METADATA_STRING@" "$FILE"
+        else
+          sed -i "s@$PLACEHOLDER@$METADATA_STRING@" "$FILE"
+        fi
+      else
+        echo "No matching placeholder or metadata line. Skipping."
+      fi
+    else
+      echo "File does not exist (might be deleted): $FILE"
     fi
+  else
+    echo "Skipping non-matching file: $FILE"
   fi
 done < affected_files.txt
+
+echo ""
+echo "Metadata injection completed successfully."
