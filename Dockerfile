@@ -1,4 +1,4 @@
-FROM alpine/git:2.44.0
+FROM alpine/git:latest
 
 RUN apk add --no-cache jq bash
 
