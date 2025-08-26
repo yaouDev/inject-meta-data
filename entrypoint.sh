@@ -35,6 +35,8 @@ for FILE in $AFFECTED_FILES; do
   if [[ "$FILE" =~ ^"$SOURCE_PATH" ]] && [[ "$FILE" =~ \.(js|jsx|ts|tsx|py|html|css|md|txt)$ ]]; then
     METADATA_STRING="Commit: $SHA, Author: $AUTHOR, Date: $DATE, Message: $MESSAGE"
 
+    echo "Injecting metadata..."
+
     if grep -q "^Commit: " "$FILE"; then
       echo "Updating metadata in $FILE..."
       sed -i "s@^Commit: .*@$METADATA_STRING@g" "$FILE"
