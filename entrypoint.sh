@@ -42,26 +42,16 @@ echo "Message:        $MESSAGE"
 echo "Source Path:    $SOURCE_PATH"
 echo "-----------------------------------"
 
-AFFECTED_FILES=$(echo "$EVENT_PAYLOAD" | jq -r '
+AFFECTED_FILES=$(jq -r '
   if .head_commit != null then
-    [
-      (.head_commit.added // []),
-      (.head_commit.modified // [])
-    ]
-    | add
-    | unique
-    | .[]
+    (.head_commit.added + .head_commit.modified) // []
   elif .commits != null then
-    [
-      .commits[].added[],
-      .commits[].modified[]
-    ]
-    | unique
-    | .[]
+    [ .commits[].added[], .commits[].modified[] ] | unique
   else
-    empty
+    []
   end
-')
+' "$GITHUB_EVENT_PATH")
+
 
 
 if [ -z "$AFFECTED_FILES" ]; then
