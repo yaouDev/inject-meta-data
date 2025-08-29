@@ -1,11 +1,4 @@
-# ----------------------------------------------
-IP Owner: yaouDev
-Commit: c58060c0486b5a5274189472d7034713b7e7a490
-Author: August J
-Date: 2025-08-29T13:41:46+02:00
-Message: reformat metadata string
-----------------------------------------------
-#
+# __GIT_COMMIT_METADATA__
 
 import os
 import sys

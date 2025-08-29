@@ -41,8 +41,25 @@ echo "Message:        $MESSAGE"
 echo "Source Path:    $SOURCE_PATH"
 echo "-----------------------------------"
 
-METADATA_STRING="----------------------------------------------\\nIP Owner: $IP_OWNER\\nCommit: $SHA\\nAuthor: $AUTHOR\\nDate: $DATE\\nMessage: $MESSAGE\\n----------------------------------------------"
+build_metadata_string() {
+  local comment_prefix=$1
+  local metadata_lines=(
+    "----------------------------------------------"
+    "IP Owner: $IP_OWNER"
+    "Commit: $SHA"
+    "Author: $AUTHOR"
+    "Date: $DATE"
+    "Message: $MESSAGE"
+    "----------------------------------------------"
+  )
 
+  local metadata_string=""
+  for line in "${metadata_lines[@]}"; do
+    metadata_string+="${comment_prefix} ${line}\\n"
+  done
+
+  echo -n "$metadata_string"
+}
 
 CODE_EXTENSIONS="js|jsx|ts|tsx|py|rb|go|rs|java|c|cpp|cs|html|css|scss|md|txt|sh|json|yaml|yml|xml|php|swift|kt"
 
@@ -72,6 +89,17 @@ mapfile -t AFFECTED_FILES < <(
 
 for FILE in "${AFFECTED_FILES[@]}"; do
   echo "Processing file: $FILE"
+
+  if [[ "$FILE" =~ \.(js|ts|jsx|tsx|html|css|md|txt)$ ]]; then
+    COMMENT_PREFIX="//"
+  elif [[ "$FILE" =~ \.(py|sh|yaml|yml)$ ]]; then
+    COMMENT_PREFIX="#"
+  else
+    COMMENT_PREFIX="#"
+    echo "Unsupported language - may cause unexpected behaviour. Defaulting to '#' for comments"
+  fi
+
+  METADATA_STRING=$(build_metadata_string "$COMMENT_PREFIX")
 
   if grep -q "^Commit: " "$FILE"; then
     echo "Updating existing metadata..."
