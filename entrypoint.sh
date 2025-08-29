@@ -13,12 +13,18 @@ fi
 
 git config --global --add safe.directory /github/workspace
 
-if find "$SOURCE_PATH" -type f | grep -q .; then
-  echo "Continuing to look for matches in $SOURCE_PATH"
+FOUND_FILES=$(find "$SOURCE_PATH" -type f)
+
+if [ -n "$FOUND_FILES" ]; then
+  echo "Found files in $SOURCE_PATH"
+  if [ -n "$DEBUG" ]; then
+    echo "$FOUND_FILES"
+  fi
 else
   echo "No files found in $SOURCE_PATH"
   exit 0
 fi
+
 
 SHA=${GITHUB_SHA:-"unknown"}
 EVENT_PAYLOAD=$(cat "$GITHUB_EVENT_PATH")
@@ -36,11 +42,6 @@ echo "Date:           $DATE"
 echo "Message:        $MESSAGE"
 echo "Source Path:    $SOURCE_PATH"
 echo "-----------------------------------"
-
-if [ -n "$DEBUG" ]; then
-    echo "head_commit payload:"
-    echo "$EVENT_PAYLOAD" | jq '.head_commit'
-fi
 
 AFFECTED_FILES=$(echo "$EVENT_PAYLOAD" | jq -r '
   if .head_commit != null then
