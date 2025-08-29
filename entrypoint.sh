@@ -13,6 +13,13 @@ fi
 
 git config --global --add safe.directory /github/workspace
 
+if find "$SOURCE_PATH" -type f | grep -q .; then
+  echo "Continuing to look for matches in $SOURCE_PATH"
+else
+  echo "No files found in $SOURCE_PATH"
+  exit 0
+fi
+
 SHA=${GITHUB_SHA:-"unknown"}
 EVENT_PAYLOAD=$(cat "$GITHUB_EVENT_PATH")
 
