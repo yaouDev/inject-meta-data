@@ -42,7 +42,7 @@ echo "Message:        $MESSAGE"
 echo "Source Path:    $SOURCE_PATH"
 echo "-----------------------------------"
 
-AFFECTED_FILES=$(jq -r '
+mapfile -t AFFECTED_FILES < <(jq -r '
   if .head_commit != null then
     (
       (.head_commit.added // []) + (.head_commit.modified // [])
@@ -63,7 +63,7 @@ fi
 
 METADATA_STRING="Commit: $SHA, Author: $AUTHOR, Date: $DATE, Message: $MESSAGE"
 
-echo "$AFFECTED_FILES" | while IFS= read -r FILE; do
+for FILE in "${AFFECTED_FILES[@]}"; do
   if [[ "$FILE" == "${SOURCE_PATH%/}/"* ]] && [[ "$FILE" =~ \.(js|jsx|ts|tsx|py|html|css|md|txt)$ ]]; then
     if [ -f "$FILE" ]; then
       echo "Processing file: $FILE"
@@ -92,6 +92,7 @@ echo "$AFFECTED_FILES" | while IFS= read -r FILE; do
     echo "Skipping non-matching file: $FILE"
   fi
 done
+
 
 echo ""
 echo "Metadata injection completed successfully."
