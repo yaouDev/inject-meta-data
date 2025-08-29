@@ -25,7 +25,6 @@ else
   exit 0
 fi
 
-
 SHA=${GITHUB_SHA:-"unknown"}
 EVENT_PAYLOAD=$(cat "$GITHUB_EVENT_PATH")
 

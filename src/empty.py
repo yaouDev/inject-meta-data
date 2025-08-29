@@ -1,0 +1,1 @@
+# __GIT_COMMIT_METADATA__
