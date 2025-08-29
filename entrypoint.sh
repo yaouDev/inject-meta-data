@@ -41,52 +41,49 @@ echo "Message:        $MESSAGE"
 echo "Source Path:    $SOURCE_PATH"
 echo "-----------------------------------"
 
-mapfile -t AFFECTED_FILES < <(jq -r '
+METADATA_STRING="Commit: $SHA, Author: $AUTHOR, Date: $DATE, Message: $MESSAGE"
+
+CODE_EXTENSIONS="js|jsx|ts|tsx|py|rb|go|rs|java|c|cpp|cs|html|css|scss|md|txt|sh|json|yaml|yml|xml|php|swift|kt"
+
+mapfile -t COMMITTED_FILES < <(jq -r '
   if .head_commit != null then
-    (
-      (.head_commit.added // []) + (.head_commit.modified // [])
-    ) | .[]
+    ((.head_commit.added // []) + (.head_commit.modified // [])) | .[]
   elif .commits != null then
-    (
-      [ .commits[].added[], .commits[].modified[] ] | unique
-    ) | .[]
+    ([.commits[].added[], .commits[].modified[]] | unique) | .[]
   else
     empty
   end
 ' "$GITHUB_EVENT_PATH")
 
-METADATA_STRING="Commit: $SHA, Author: $AUTHOR, Date: $DATE, Message: $MESSAGE"
+mapfile -t AFFECTED_FILES < <(
+  for FILE in "${COMMITTED_FILES[@]}"; do
+    if [[ "$FILE" == "${SOURCE_PATH%/}/"* ]] && [[ "$FILE" =~ \.($CODE_EXTENSIONS)$ ]] && [[ -f "$FILE" ]]; then
+      echo "$FILE"
+    fi
+  done
+)
 
 for FILE in "${AFFECTED_FILES[@]}"; do
-  if [[ "$FILE" == "${SOURCE_PATH%/}/"* ]] && [[ "$FILE" =~ \.(js|jsx|ts|tsx|py|html|css|md|txt)$ ]]; then
-    if [ -f "$FILE" ]; then
-      echo "Processing file: $FILE"
+  echo "Processing file: $FILE"
 
-      if grep -q "^Commit: " "$FILE"; then
-        echo "Updating existing metadata..."
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-          sed -i '' "s@^Commit: .*@$METADATA_STRING@" "$FILE"
-        else
-          sed -i "s@^Commit: .*@$METADATA_STRING@" "$FILE"
-        fi
-      elif grep -q "$PLACEHOLDER" "$FILE"; then
-        echo "Injecting metadata into placeholder..."
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-          sed -i '' "s@$PLACEHOLDER@$METADATA_STRING@" "$FILE"
-        else
-          sed -i "s@$PLACEHOLDER@$METADATA_STRING@" "$FILE"
-        fi
-      else
-        echo "No matching placeholder or metadata line. Skipping."
-      fi
+  if grep -q "^Commit: " "$FILE"; then
+    echo "Updating existing metadata..."
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+      sed -i '' "s@^Commit: .*@$METADATA_STRING@" "$FILE"
     else
-      echo "File does not exist (might be deleted): $FILE"
+      sed -i "s@^Commit: .*@$METADATA_STRING@" "$FILE"
+    fi
+  elif grep -q "$PLACEHOLDER" "$FILE"; then
+    echo "Injecting metadata into placeholder..."
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+      sed -i '' "s@$PLACEHOLDER@$METADATA_STRING@" "$FILE"
+    else
+      sed -i "s@$PLACEHOLDER@$METADATA_STRING@" "$FILE"
     fi
   else
-    echo "Skipping non-matching file: $FILE"
+    echo "No matching placeholder or metadata line. Skipping."
   fi
 done
-
 
 echo ""
 echo "Metadata injection completed successfully."
