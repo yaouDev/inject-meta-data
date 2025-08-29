@@ -51,10 +51,18 @@ AFFECTED_FILES=$(echo "$EVENT_PAYLOAD" | jq -r '
     | add
     | unique
     | .[]
+  elif .commits != null then
+    [
+      .commits[].added[],
+      .commits[].modified[]
+    ]
+    | unique
+    | .[]
   else
     empty
   end
 ')
+
 
 if [ -z "$AFFECTED_FILES" ]; then
   echo "No affected files found in the commit. Exiting."
