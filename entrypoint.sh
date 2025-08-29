@@ -55,6 +55,12 @@ mapfile -t COMMITTED_FILES < <(jq -r '
   end
 ' "$GITHUB_EVENT_PATH")
 
+# this might not be a wanted feature
+if [[ ${#COMMITTED_FILES[@]} -eq 0 ]]; then
+  echo "No committed files found in event payload, falling back to all source files."
+  mapfile -t COMMITTED_FILES < <(find "$SOURCE_PATH" -type f)
+fi
+
 mapfile -t AFFECTED_FILES < <(
   for FILE in "${COMMITTED_FILES[@]}"; do
     if [[ "$FILE" == "${SOURCE_PATH%/}/"* ]] && [[ "$FILE" =~ \.($CODE_EXTENSIONS)$ ]] && [[ -f "$FILE" ]]; then
