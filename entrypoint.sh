@@ -39,8 +39,7 @@ AFFECTED_FILES=$(echo "$EVENT_PAYLOAD" | jq -r '
   if .head_commit != null then
     [
       (.head_commit.added // []),
-      (.head_commit.modified // []),
-      (.head_commit.removed // [])
+      (.head_commit.modified // [])
     ]
     | add
     | unique
