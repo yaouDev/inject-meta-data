@@ -26,11 +26,10 @@ else
 fi
 
 SHA=${GITHUB_SHA:-"unknown"}
-EVENT_PAYLOAD=$(cat "$GITHUB_EVENT_PATH")
+AUTHOR=$(jq -r '.head_commit.author.name // "unknown"' "$GITHUB_EVENT_PATH")
+DATE=$(jq -r '.head_commit.timestamp // "unknown"' "$GITHUB_EVENT_PATH")
+MESSAGE=$(jq -r '.head_commit.message // "unknown"' "$GITHUB_EVENT_PATH")
 
-AUTHOR=$(echo "$EVENT_PAYLOAD" | jq -r '.head_commit.author.name // "unknown"')
-DATE=$(echo "$EVENT_PAYLOAD" | jq -r '.head_commit.timestamp // "unknown"')
-MESSAGE=$(echo "$EVENT_PAYLOAD" | jq -r '.head_commit.message // "unknown"')
 
 echo ""
 echo "Running metadata injection script..."
@@ -54,12 +53,7 @@ mapfile -t AFFECTED_FILES < <(jq -r '
   else
     empty
   end
-' "$EVENT_PAYLOAD")
-
-if [ -z "$AFFECTED_FILES" ]; then
-  echo "No affected files found in the commit. Exiting."
-  exit 0
-fi
+' "$GITHUB_EVENT_PATH")
 
 METADATA_STRING="Commit: $SHA, Author: $AUTHOR, Date: $DATE, Message: $MESSAGE"
 
