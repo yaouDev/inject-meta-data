@@ -44,15 +44,17 @@ echo "-----------------------------------"
 
 AFFECTED_FILES=$(jq -r '
   if .head_commit != null then
-    (.head_commit.added + .head_commit.modified) // []
+    (
+      (.head_commit.added // []) + (.head_commit.modified // [])
+    ) | .[]
   elif .commits != null then
-    [ .commits[].added[], .commits[].modified[] ] | unique
+    (
+      [ .commits[].added[], .commits[].modified[] ] | unique
+    ) | .[]
   else
-    []
+    empty
   end
-' "$GITHUB_EVENT_PATH")
-
-
+' "$EVENT_PAYLOAD")
 
 if [ -z "$AFFECTED_FILES" ]; then
   echo "No affected files found in the commit. Exiting."
