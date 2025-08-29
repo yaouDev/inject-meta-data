@@ -7,6 +7,9 @@ on:
       - master
       - wip
 
+permissions:
+    contents: write
+
 jobs:
   inject-metadata:
     runs-on: ubuntu-latest
