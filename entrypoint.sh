@@ -81,16 +81,16 @@ for FILE in "${AFFECTED_FILES[@]}"; do
   if grep -q "^Commit: " "$FILE"; then
     echo "Updating existing metadata..."
     if [[ "$OSTYPE" == "darwin"* ]]; then
-      sed -i '' "s@^Commit: .*@$METADATA_STRING@" "$FILE"
+      sed -i '' "s|^Commit: .*|$METADATA_STRING|" "$FILE"
     else
-      sed -i "s@^Commit: .*@$METADATA_STRING@" "$FILE"
+      sed -i "s|^Commit: .*|$METADATA_STRING|" "$FILE"
     fi
   elif grep -q "$PLACEHOLDER" "$FILE"; then
     echo "Injecting metadata into placeholder..."
     if [[ "$OSTYPE" == "darwin"* ]]; then
-      sed -i '' "s@$PLACEHOLDER@$METADATA_STRING@" "$FILE"
+      sed -i '' "s|$PLACEHOLDER|$METADATA_STRING|" "$FILE"
     else
-      sed -i "s@$PLACEHOLDER@$METADATA_STRING@" "$FILE"
+      sed -i "s|$PLACEHOLDER|$METADATA_STRING|" "$FILE"
     fi
   else
     echo "No matching placeholder or metadata line. Skipping."
