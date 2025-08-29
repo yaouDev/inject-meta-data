@@ -41,7 +41,13 @@ echo "Message:        $MESSAGE"
 echo "Source Path:    $SOURCE_PATH"
 echo "-----------------------------------"
 
-METADATA_STRING="Commit: $SHA, Author: $AUTHOR, Date: $DATE, Message: $MESSAGE"
+METADATA_STRING="----------------------------------------------
+IP Owner: $IP_OWNER
+Commit: $SHA
+Author: $AUTHOR
+Date: $DATE
+Message: $MESSAGE
+----------------------------------------------"
 
 CODE_EXTENSIONS="js|jsx|ts|tsx|py|rb|go|rs|java|c|cpp|cs|html|css|scss|md|txt|sh|json|yaml|yml|xml|php|swift|kt"
 

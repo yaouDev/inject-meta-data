@@ -23,6 +23,7 @@ jobs:
         with:
           source_code_path: 'src'
           debug_mode: 'yes'
+          ip_owner: 'yaouDev'
 
       - name: Commit and push changes
         uses: stefanzweifel/git-auto-commit-action@v5
