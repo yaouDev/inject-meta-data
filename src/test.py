@@ -1,4 +1,11 @@
-# __GIT_COMMIT_METADATA__
+# # ----------------------------------------------
+# IP Owner: yaouDev
+# Commit: b27589051bc0badc21fc4a64de54e67a89ab0e2a
+# Author: August J
+# Date: 2025-08-29T13:51:40+02:00
+# Message: add comments to metadata injection
+# ----------------------------------------------
+
 
 import os
 import sys
