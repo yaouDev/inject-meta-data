@@ -57,7 +57,7 @@ fi
 METADATA_STRING="Commit: $SHA, Author: $AUTHOR, Date: $DATE, Message: $MESSAGE"
 
 echo "$AFFECTED_FILES" | while IFS= read -r FILE; do
-  if [[ "$FILE" == "$SOURCE_PATH"* ]] && [[ "$FILE" =~ \.(js|jsx|ts|tsx|py|html|css|md|txt)$ ]]; then
+  if [[ "$FILE" == "${SOURCE_PATH%/}/"* ]] && [[ "$FILE" =~ \.(js|jsx|ts|tsx|py|html|css|md|txt)$ ]]; then
     if [ -f "$FILE" ]; then
       echo "Processing file: $FILE"
 

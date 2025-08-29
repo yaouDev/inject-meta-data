@@ -18,7 +18,7 @@ jobs:
         id: inject
         uses: yaouDev/inject-metadata@wip
         with:
-          source_code_path: 'src/'
+          source_code_path: 'src'
           debug_mode: ''
 
       - name: Commit and push changes
